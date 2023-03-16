@@ -1,3 +1,29 @@
-<h1>Welcome to your library project</h1>
-<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+    import {Flubber} from "../lib";
+    import Stop from "../lib/components/nodes/Stop.svelte";
+
+    const customNodes = {
+        stop: Stop
+    }
+
+    const nodes = [
+        {
+            id: '0',
+            type: 'start',
+            data: {hello:'world'},
+            position: {x:1010, y:1010}
+        },
+        {
+            id: '1',
+            type: 'stop',
+            data: {hello:'world'},
+            position: {x:1010, y:1070}
+        }
+    ]
+</script>
+
+<Flubber
+        style="height: 500px; border: 2px solid slategray; border-radius: 5px; box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);"
+        {nodes}
+        {customNodes}
+/>

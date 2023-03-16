@@ -48,5 +48,9 @@
 	},
 	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@neodrag/svelte": "^2.0.3",
+		"svelte-drag": "^3.1.0"
+	}
 }
