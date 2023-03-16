@@ -20,14 +20,13 @@ export interface GridOptionsType {
 }
 
 export interface NodeType {
-    id: string | number;
     type: string;
     data: object;
     position: Position;
 }
 
-export interface CustomNodeType {
-    [key: string]: SvelteComponentTyped;
+export interface NodeArrayType {
+    [key: string | number]: NodeType
 }
 
 export interface EdgeType {
@@ -38,9 +37,17 @@ export interface EdgeType {
     targetPosition: Position;
 }
 
+export interface EdgeArrayType {
+    [key: string | number]: EdgeType
+}
+
+export interface CustomNodeType {
+    [key: string]: SvelteComponentTyped;
+}
+
 export interface StoreType {
-    nodes: NodeType[];
-    edges: EdgeType[];
+    nodes: NodeArrayType;
+    edges: EdgeArrayType;
     viewOptions: viewOptionType;
     gridOptions: GridOptionsType;
 }

@@ -1,6 +1,12 @@
 <script lang="ts">
     import {flubberIdGenerator} from "../utils/generators";
-    import type {CustomNodeType, EdgeType, GridOptionsType, NodeType, viewOptionType} from "../types";
+    import type {
+        CustomNodeType,
+        EdgeArrayType,
+        GridOptionsType,
+        NodeArrayType,
+        viewOptionType
+    } from "../types";
     import {initStore} from "$lib/store/api.js";
     import Graph from "$lib/containers/Graph.svelte";
 
@@ -8,8 +14,8 @@
     let style: string;
     let className: string;
 
-    let nodes: NodeType[];
-    let edges: EdgeType[];
+    let nodes: NodeArrayType;
+    let edges: EdgeArrayType;
     let viewOptions: viewOptionType;
     let gridOptions: GridOptionsType;
     let customNodes: CustomNodeType;
@@ -25,12 +31,14 @@
         customNodes,
     }
 
-    initStore(flubberId, {
+    const thisStore = initStore(flubberId, {
         nodes: nodes,
         edges: edges,
         viewOptions: viewOptions,
         gridOptions: gridOptions,
     });
+
+    $: logStore = console.log($thisStore.nodes);
 
 </script>
 
@@ -40,6 +48,7 @@
         {style}
 >
     <Graph {flubberId} {customNodes} />
+    <slot />
 </div>
 
 <style>

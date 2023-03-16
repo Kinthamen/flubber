@@ -1,17 +1,21 @@
 <script lang="ts">
     import {draggable, type DragOptions} from '../utils/dragging';
-    import {createEventDispatcher} from "svelte";
-    import type {Position} from "../types";
+    import type {Position, StoreType} from "../types";
+    import type {Writable} from "svelte/store";
+    import {getStore} from "../store/api";
 
-    const dispatch = createEventDispatcher();
-
+    export let flubberId: string;
+    export let id: string;
     export let position = { x: 2500, y: 2500 } as Position;
+    export let setDraggable;
+
+    const thisStore: Writable<StoreType> = getStore(flubberId);
 
     const options: DragOptions = {
         axis: 'both',
         bounds: 'parent',
-        onDragStart: e => dispatch('setdraggable', { flag: true }),
-        onDragEnd: e => dispatch('setdraggable', { flag: false }),
+        onDragStart: e => setDraggable(true),
+        onDragEnd: e => { $thisStore.nodes[id].position = { x: e.offsetX, y: e.offsetY }; setDraggable(false); },
         defaultPosition: position,
     };
 

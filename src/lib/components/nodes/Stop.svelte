@@ -1,9 +1,14 @@
 <script lang="ts">
+
+    export let id;
     export let data;
+    export let updateNodeData;
+
 </script>
 
 <div class="start-node">
     Stop {data.hello}
+    <button type="button" on:click={() => updateNodeData(id, {hello: 'my friend!'})}>Update Data</button>
 </div>
 
 <style>

@@ -7,7 +7,7 @@
     import Start from "../components/nodes/Start.svelte";
     import Node from "$lib/components/Node.svelte";
 
-    const BuiltinNodes = {
+    const builtinNodes = {
         start: Start,
     } as CustomNodeType;
 
@@ -40,17 +40,22 @@
         disabled: disableDrag,
     };
 
+    const setDraggable = (flag: boolean) => {disableDrag = flag}
+
+    const updateNodeData = (id: string | number, data: any) => {
+        $thisStore.nodes[id].data = data;
+    }
+
 </script>
 
 <div id="graph-{flubberId}" {style} use:draggable={options}>
-    {#each $thisStore.nodes as node}
-        <Node on:setdraggable={(e) => { disableDrag = e.detail.flag }} position={node.position}>
-        {#if node.type in customNodes}
-            <svelte:component this={customNodes[node.type]} data={node.data} />
-        {:else if node.type in BuiltinNodes}
-            <svelte:component this={BuiltinNodes[node.type]} data={node.data} />
-        {/if}
+    {#each Object.entries($thisStore.nodes) as [id, node]}
+        <Node {id} {flubberId} {setDraggable} position={node.position}>
+            {#if node.type in customNodes}
+                <svelte:component this={customNodes[node.type]} id={id}  data={node.data} {updateNodeData} />
+            {:else if node.type in builtinNodes}
+                <svelte:component this={builtinNodes[node.type]} id={id}  data={node.data} {updateNodeData} />
+            {/if}
         </Node>
     {/each}
-    <slot/>
 </div>

@@ -6,20 +6,18 @@
         stop: Stop
     }
 
-    const nodes = [
-        {
-            id: '0',
+    const nodes = {
+        0: {
             type: 'start',
-            data: {hello:'world'},
-            position: {x:1010, y:1010}
+            data: { hello:'world' },
+            position: { x: 1010, y: 1010 },
         },
-        {
-            id: '1',
+        1: {
             type: 'stop',
-            data: {hello:'world'},
-            position: {x:1010, y:1070}
+            data: { hello:'world' },
+            position: { x:1010, y: 1070 }
         }
-    ]
+    }
 </script>
 
 <Flubber

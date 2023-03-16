@@ -1,11 +1,11 @@
-import type {StoreType} from "../types";
+import type {Position, StoreType} from "../types";
 import {store} from "./store";
 import {type Writable, writable} from "svelte/store";
 
 export function createStore(id: string): Writable<StoreType> {
     store[id] = writable({
-        nodes: [],
-        edges: [],
+        nodes: {},
+        edges: {},
         viewOptions: {
             zoom: 3,
             startPosition: {
@@ -25,8 +25,8 @@ export function createStore(id: string): Writable<StoreType> {
 
 export function initStore(id: string, data: StoreType): Writable<StoreType> {
     store[id] = writable({
-        nodes: data.nodes || [],
-        edges: data.edges || [],
+        nodes: data.nodes || {},
+        edges: data.edges || {},
         viewOptions: data.viewOptions || {
             zoom: 3,
             startPosition: {
