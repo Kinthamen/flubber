@@ -1,14 +1,16 @@
 <script lang="ts">
 
+    import Connector from "$lib/components/handles/Connector.svelte";
+
     export let id;
     export let data;
-    export let updateNodeData;
+    export let flubberId;
 
 </script>
 
 <div class="start-node">
     Stop {data.hello}
-    <button type="button" on:click={() => updateNodeData(id, {hello: 'my friend!'})}>Update Data</button>
+    <Connector nodeId={id} {flubberId} />
 </div>
 
 <style>

@@ -7,6 +7,13 @@ export interface Position {
     z?: number;
 }
 
+export enum Direction {
+    Top = 'top',
+    Bottom = 'bottom',
+    Left = 'left',
+    Right = 'right',
+}
+
 export interface viewOptionType {
     zoom: number;
     startPosition: Position;
@@ -29,12 +36,40 @@ export interface NodeArrayType {
     [key: string | number]: NodeType
 }
 
+export enum MarkerType {
+    Arrow = 'arrow',
+    ArrowClosed = 'arrowclosed',
+}
+
+export type EdgeMarker = {
+    type: MarkerType;
+    color?: string;
+    width?: number;
+    height?: number;
+    markerUnits?: string;
+    orient?: string;
+    strokeWidth?: number;
+};
+
+export type EdgeMarkerType = string | EdgeMarker;
+
+export type EdgeProps = EdgeType & {
+    path: string;
+    markerEnd?: EdgeMarkerType;
+    markerStart?: EdgeMarkerType;
+}
+
 export interface EdgeType {
-    id: string | number;
-    source: string;
+    type: 'straight' | 'smoothstep' | 'step' | 'bezier';
+    sourceId: string;
     sourcePosition: Position;
-    target: string;
+    sourceDirection: Direction;
+    targetId: string;
     targetPosition: Position;
+    targetDirection: Direction;
+    animate?: boolean;
+    style?: string;
+    className?: string;
 }
 
 export interface EdgeArrayType {
@@ -42,6 +77,10 @@ export interface EdgeArrayType {
 }
 
 export interface CustomNodeType {
+    [key: string]: SvelteComponentTyped;
+}
+
+export interface CustomEdgeType {
     [key: string]: SvelteComponentTyped;
 }
 

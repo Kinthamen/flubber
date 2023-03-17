@@ -1,31 +1,27 @@
 <script lang="ts">
     import {draggable, type DragOptions} from '../utils/dragging';
-    import type {Position, StoreType} from "../types";
-    import type {Writable} from "svelte/store";
-    import {getStore} from "../store/api";
+    import type {Position} from "../types";
 
-    export let flubberId: string;
-    export let id: string;
+    export let id: string | number;
     export let position = { x: 2500, y: 2500 } as Position;
-    export let setDraggable;
-
-    const thisStore: Writable<StoreType> = getStore(flubberId);
+    export let updatePosition;
 
     const options: DragOptions = {
         axis: 'both',
         bounds: 'parent',
-        onDragStart: e => setDraggable(true),
-        onDragEnd: e => { $thisStore.nodes[id].position = { x: e.offsetX, y: e.offsetY }; setDraggable(false); },
+        onDrag: (e) => {updatePosition(id, { x: e.offsetX, y: e.offsetY }, e.currentNode.offsetHeight, e.currentNode.offsetWidth)},
         defaultPosition: position,
+        cancel: '.connector',
     };
 
 </script>
 
 <div
+        id={id}
         class="node"
         use:draggable={options}
 >
-    <slot/>
+    <slot />
 </div>
 
 <style>

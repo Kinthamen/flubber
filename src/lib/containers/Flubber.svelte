@@ -10,42 +10,26 @@
     import {initStore} from "$lib/store/api.js";
     import Graph from "$lib/containers/Graph.svelte";
 
-    let flubberId = flubberIdGenerator();
-    let style: string;
-    let className: string;
+    export let flubberId = flubberIdGenerator();
+    export let nodes: NodeArrayType;
+    export let edges: EdgeArrayType;
+    export let viewOptions: viewOptionType;
+    export let gridOptions: GridOptionsType;
+    export let customNodes: CustomNodeType;
 
-    let nodes: NodeArrayType;
-    let edges: EdgeArrayType;
-    let viewOptions: viewOptionType;
-    let gridOptions: GridOptionsType;
-    let customNodes: CustomNodeType;
-
-    export {
-        flubberId,
-        nodes,
-        edges,
-        style,
-        className as class,
-        viewOptions,
-        gridOptions,
-        customNodes,
-    }
-
-    const thisStore = initStore(flubberId, {
+    initStore(flubberId, {
         nodes: nodes,
         edges: edges,
         viewOptions: viewOptions,
         gridOptions: gridOptions,
     });
 
-    $: logStore = console.log($thisStore.nodes);
-
 </script>
 
 <div
         id="flubber-{flubberId}"
-        class="flubber {className}"
-        {style}
+        class="flubber {$$props.class}"
+        style={$$props.style}
 >
     <Graph {flubberId} {customNodes} />
     <slot />
