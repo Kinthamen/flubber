@@ -14,49 +14,11 @@ export enum Direction {
     Right = 'right',
 }
 
-export interface viewOptionType {
-    zoom: number;
-    startPosition: Position;
-}
-
-export interface GridOptionsType {
-    graphSize: number;
-    gridSize: number;
-    gridStyle: string;
-    snap: boolean;
-}
-
 export interface NodeType {
     type: string;
     data: object;
     position: Position;
-}
-
-export interface NodeArrayType {
-    [key: string | number]: NodeType
-}
-
-export enum MarkerType {
-    Arrow = 'arrow',
-    ArrowClosed = 'arrowclosed',
-}
-
-export type EdgeMarker = {
-    type: MarkerType;
-    color?: string;
-    width?: number;
-    height?: number;
-    markerUnits?: string;
-    orient?: string;
-    strokeWidth?: number;
-};
-
-export type EdgeMarkerType = string | EdgeMarker;
-
-export type EdgeProps = EdgeType & {
-    path: string;
-    markerEnd?: EdgeMarkerType;
-    markerStart?: EdgeMarkerType;
+    isConnected: boolean;
 }
 
 export interface EdgeType {
@@ -72,26 +34,47 @@ export interface EdgeType {
     className?: string;
 }
 
-export interface EdgeArrayType {
-    [key: string | number]: EdgeType
+export interface ViewOptionsType {
+    zoom: number;
+    startPosition: Position;
 }
 
-export interface CustomNodeType {
+export interface GridOptionsType {
+    graphSize: number;
+    gridSize: number;
+    gridStyle: string;
+    snap: boolean;
+}
+
+export interface PathDrawType {
+    enabled: boolean;
+    sourceId: string;
+    sourceType: string;
+    sourceDirection: string;
+    sourcePosition: Position;
+    mousePosition: Position;
+    drawingEvent: (e: MouseEvent) => void;
+}
+
+export interface CustomComponentType {
     [key: string]: SvelteComponentTyped;
 }
 
-export interface CustomEdgeType {
-    [key: string]: SvelteComponentTyped;
+export type RawStoreType = {
+    nodes: {[key: string]: NodeType},
+    edges: EdgeType[],
+    viewOptions: ViewOptionsType,
+    gridOptions: GridOptionsType,
 }
 
-export interface StoreType {
-    nodes: NodeArrayType;
-    edges: EdgeArrayType;
-    viewOptions: viewOptionType;
-    gridOptions: GridOptionsType;
-    updateNodePosition: (nodeId: string | number, pos: Position) => void;
+export type StoreType = {
+    nodes: Writable<{ [key: string]: NodeType }>;
+    edges: Writable<EdgeType[]>;
+    viewOptions: Writable<ViewOptionsType>;
+    gridOptions: Writable<GridOptionsType>;
+    pathDraw: Writable<PathDrawType>;
 }
 
-export interface Store {
+export interface StoresType {
     [key: string]: Writable<StoreType>;
 }

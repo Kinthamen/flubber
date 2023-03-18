@@ -11,7 +11,7 @@
 <Node {id} {flubberId}>
     <div class="start-node">
         Start {data.hello}
-        <Connector connType="source" direction="right" nodeId={id} {flubberId} />
+        <Connector style="height: 50px; flex: 1 0 auto; border: unset; border-radius: unset;" connType="source" direction="right" nodeId={id} {flubberId} />
     </div>
 </Node>
 

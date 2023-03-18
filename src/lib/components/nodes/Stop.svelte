@@ -11,7 +11,7 @@
 <Node {id} {flubberId}>
     <div class="stop-node">
         <Connector connType="target" direction="left" nodeId={id} {flubberId} />
-        Stop {data.hello}
+        Stop {data.hello} hello
     </div>
 </Node>
 
