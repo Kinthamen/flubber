@@ -1,6 +1,6 @@
 <script lang="ts">
     import Node from "../Node.svelte";
-    import Connector from "../handles/Connector.svelte";
+    import Connector from "../connectors/Connector.svelte";
 
     export let id;
     export let data;
