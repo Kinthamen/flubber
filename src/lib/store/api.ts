@@ -1,4 +1,4 @@
-import type {Position, StoreType} from "../types";
+import type {NodeArrayType, Position, StoreType} from "../types";
 import {store} from "./store";
 import {type Writable, writable} from "svelte/store";
 
@@ -18,7 +18,11 @@ export function createStore(id: string): Writable<StoreType> {
             gridSize: 40,
             gridStyle: 'dots',
             snap: false,
-        }
+        },
+        updateNodePosition: (nodeId, pos) => {
+            const thisStore = getStore(id);
+            thisStore.nodes[nodeId].position = pos;
+        },
     } as StoreType);
     return store[id];
 }
@@ -45,4 +49,9 @@ export function initStore(id: string, data: StoreType): Writable<StoreType> {
 
 export function getStore(id: string): Writable<StoreType> {
     return store[id];
+}
+
+export function getStoreNodes(id: string): NodeArrayType {
+    let nodes;
+    const unsubscribe = store[id].subscribe(n => nodes = n);
 }

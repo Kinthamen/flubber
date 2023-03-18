@@ -89,6 +89,7 @@ export interface StoreType {
     edges: EdgeArrayType;
     viewOptions: viewOptionType;
     gridOptions: GridOptionsType;
+    updateNodePosition: (nodeId: string | number, pos: Position) => void;
 }
 
 export interface Store {

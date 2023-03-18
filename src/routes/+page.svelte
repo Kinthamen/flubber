@@ -19,17 +19,7 @@
         }
     }
 
-    const edges = {
-        0: {
-            type: 'bezier',
-            sourceId: '0',
-            sourcePosition: { x: 1010, y: 1010 },
-            sourceDirection: 'top',
-            targetId: '1',
-            targetPosition: { x:1010, y: 1070 },
-            targetDirection: 'left'
-        }
-    }
+    const edges = []
 </script>
 
 <Flubber
