@@ -3,12 +3,12 @@
 
     export let baseEdgeProps: EdgeProps;
 
-    $: ({
+    const {
         path,
         style,
         markerEnd,
         markerStart,
-    } = baseEdgeProps);
+    } = baseEdgeProps;
 
 </script>
 

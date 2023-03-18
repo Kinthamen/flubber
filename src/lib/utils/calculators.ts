@@ -1,6 +1,4 @@
-import {Direction} from "../types";
-import type {Position} from "../store/store2";
-import {drawStore} from "../store/store2";
+import {Direction, type Position} from "../types";
 
 type CurvatureType = { pos: Direction, x1: number, y1: number, x2: number, y2: number, c: number};
 
@@ -77,13 +75,4 @@ export function getBezierPath({
     });
 
     return `M${sourcePosition.x},${sourcePosition.y} C${sourceControlX},${sourceControlY} ${targetControlX},${targetControlY} ${targetPosition.x},${targetPosition.y}`;
-}
-
-export function relativeCoords (graphId: string, event: MouseEvent) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const bounds = document.getElementById(graphId).getBoundingClientRect();
-    const x = event.clientX - bounds.left;
-    const y = event.clientY - bounds.top;
-    drawStore.update(prev => ({...prev, mousePosition: {x: x, y: y}}))
 }

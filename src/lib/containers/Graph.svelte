@@ -1,148 +1,141 @@
 <script lang="ts">
-    import {draggable} from '../utils/dragging';
-    import type {CustomNodeType,CustomEdgeType} from "../types";
-    import Start from "../components/nodes/Start.svelte";
-    import BezierEdge from "../components/edges/BezierEdge.svelte";
-    import {getOrCreateStore, drawStore} from "../store/store2";
-    import {getBezierPath, relativeCoords} from "../utils/calculators";
-    import {Direction} from "$lib/store/store2.js";
+    import type { CustomComponentType } from '../types';
+	import { draggable } from '../utils/dragging';
+	import { getBezierPath } from '../utils/calculators';
+    import {
+        Start,
+        Stop,
+    } from '../components/nodes';
+    import {
+        BezierEdge
+    } from '../components/edges';
+	import {getStore} from "../store/api";
 
-    const builtinNodes = {
-        start: Start,
-    } as CustomNodeType;
+	const builtins = {
+		nodes: {
+			start: Start,
+            stop: Stop,
+		} as CustomComponentType,
+		edges: {
+			bezier: BezierEdge
+		} as CustomComponentType
+	};
 
-    const builtinEdges = {
-        bezier: BezierEdge,
-    } as CustomEdgeType;
+	export let flubberId: string;
+	export let customNodes = {} as CustomComponentType;
+	export let customEdges = {} as CustomComponentType;
 
-    export let flubberId: string;
-    export let customNodes = {} as CustomNodeType;
-    export let customEdges = {} as CustomEdgeType;
+	let self;
 
-    let self;
+	const { nodes, edges, viewOptions, pathDraw } = getStore(flubberId);
 
-    $: ({ nodes, edges, viewOptions, gridOptions } = getOrCreateStore(flubberId));
+	$: graphHeight = $viewOptions.graphDimensions.height;
+	$: graphWidth = $viewOptions.graphDimensions.width;
+	$: graphPosition = $viewOptions.graphDimensions.position;
+	$: gridSpacing = $viewOptions.gridProperties.spacing;
+	$: gridType = $viewOptions.gridProperties.type;
 
-    $: gridStyle = (() => {
-        if ($gridOptions.gridStyle === 'dots') {
-            return 'radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px);';
-        } else if ($gridOptions.gridStyle === 'lines') {
-            return 'linear-gradient(to right, grey 1px, transparent 1px),' +
-                'linear-gradient(to bottom, grey 1px, transparent 1px);';
-        } else {
-            return 'unset;';
-        }
-    })()
+	$: gridStyle = (() => {
+		if (gridType === 'dots') {
+			return 'radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px);';
+		} else if (gridType === 'lines') {
+			return (
+				'linear-gradient(to right, grey 1px, transparent 1px),' +
+				'linear-gradient(to bottom, grey 1px, transparent 1px);'
+			);
+		} else {
+			return 'unset;';
+		}
+	})();
 
-    $: style = `
-        height: ${$gridOptions.graphSize}px;
-        width: ${$gridOptions.graphSize}px;
-        background-size: ${$gridOptions.gridSize}px ${$gridOptions.gridSize}px;
-        background-image: ${gridStyle}`
+	$: nodeStyle = `
+        height: ${graphHeight}px;
+        width: ${graphWidth}px;
+        background-size: ${gridSpacing}px ${gridSpacing}px;
+        background-image: ${gridStyle}`;
 
-    $: edgeStyle = `
+	$: svgStyle = `
         z-index: -999;
-        height: ${$gridOptions.graphSize}px;
-        width: ${$gridOptions.graphSize}px;`
+        height: ${graphHeight}px;
+        width: ${graphWidth}px;`;
 
-    $: options = {
-        axis: 'both',
-        defaultPosition: {x: -1000, y: -1000},
-        cancel: '.node',
-    };
-
-    $: targetDirection = (() => {
-        const distanceX = $drawStore.sourcePosition.x - $drawStore.mousePosition.x;
-        const distanceY = $drawStore.sourcePosition.y - $drawStore.mousePosition.y;
-
-        if (Math.abs(distanceX) > Math.abs(distanceY)) {
-            return distanceX > 0 ? Direction.Right : Direction.Left;
-        } else {
-            return distanceY > 0 ? Direction.Bottom : Direction.Top;
-        }
-    })()
+	$: options = {
+		axis: 'both',
+		defaultPosition: graphPosition,
+		cancel: '.node'
+	};
 
 </script>
 
 <div
-        id="graph-{flubberId}"
-        {style}
-        use:draggable={options}
-        bind:this={self}
-        on:mouseup={() => {
-            if ($drawStore.enabled) {
-                $drawStore.enabled = false;
-                $drawStore.sourceId = '';
-                $drawStore.sourcePosition = {};
-                $drawStore.targetId = '';
-                $drawStore.targetPosition = {};
-                $drawStore.mousePosition = {};
-                self.removeEventListener('mousemove', $drawStore.mouseEventListener, false);
-                $drawStore.mouseEventListener = (e) => {return};
-            }
-        }}
-        on:mouseleave={() => {
-            if ($drawStore.enabled) {
-                $drawStore.enabled = false;
-                $drawStore.sourceId = '';
-                $drawStore.sourcePosition = {};
-                $drawStore.targetId = '';
-                $drawStore.targetPosition = {};
-                $drawStore.mousePosition = {};
-                self.removeEventListener('mousemove', $drawStore.mouseEventListener, false);
-                $drawStore.mouseEventListener = (e) => {return};
-            }
-        }}
+	id="graph-{flubberId}"
+	style={nodeStyle}
+	use:draggable={options}
+	bind:this={self}
+	on:mouseup={() => {
+		if ($pathDraw.enabled) {
+			$pathDraw.enabled = false;
+			$pathDraw.sourceId = '';
+			$pathDraw.sourceType = '';
+			$pathDraw.sourceDirection = '';
+			$pathDraw.sourcePosition = {};
+			$pathDraw.targetPosition = {};
+			$pathDraw.targetDirection = '';
+			self.removeEventListener('mousemove', $pathDraw.drawingEvent, false);
+		}
+	}}
+	on:mouseleave={() => {
+		if ($pathDraw.enabled) {
+			$pathDraw.enabled = false;
+			$pathDraw.sourceId = '';
+			$pathDraw.sourceType = '';
+			$pathDraw.sourceDirection = '';
+			$pathDraw.sourcePosition = {};
+			$pathDraw.targetPosition = {};
+			$pathDraw.targetDirection = '';
+			self.removeEventListener('mousemove', $pathDraw.drawingEvent, false);
+		}
+	}}
 >
-    {#each Object.entries($nodes) as [id, node]}
-        {#if node.type in customNodes}
-            <svelte:component
-                    this={customNodes[node.type]}
-                    {id}
-                    {flubberId}
-                    bind:data={node.data}
-            />
-        {:else if node.type in builtinNodes}
-            <svelte:component
-                    this={builtinNodes[node.type]}
-                    {id}
-                    {flubberId}
-                    bind:data={node.data}
-            />
-        {/if}
-    {/each}
-    <svg
-        id="edges-{flubberId}"
-        style={edgeStyle}
-        viewBox="0 0 {$gridOptions.graphSize} {$gridOptions.graphSize}"
-        on:contextmenu|preventDefault
-    >
-        {#each Object.entries($edges) as [id, edge]}
-            {#if edge.type in customEdges}
-                <svelte:component this={customEdges[edge.type]} data={edge} />
-            {:else if edge.type in builtinEdges}
-                <svelte:component this={builtinEdges[edge.type]} data={edge} />
-            {/if}
-        {/each}
-        {#if $drawStore.enabled && $drawStore.mousePosition.x}
-            <path
-                d={getBezierPath({
-                sourcePosition: $drawStore.sourcePosition,
-                sourceDirection: $drawStore.sourceDirection,
-                targetPosition: $drawStore.mousePosition,
-                targetDirection: targetDirection,
-                })}
-                fill="none"
-                class="flubber__edge-path"
-            />
-        {/if}
-    </svg>
+	{#each Object.entries($nodes) as [id, node]}
+		{#if node.type in customNodes}
+			<svelte:component this={customNodes[node.type]} {id} {flubberId} bind:data={node.data} />
+		{:else if node.type in builtins.nodes}
+			<svelte:component this={builtins.nodes[node.type]} {id} {flubberId} bind:data={node.data} />
+		{/if}
+	{/each}
+	<svg
+		id="edges-{flubberId}"
+		style={svgStyle}
+		viewBox="0 0 {graphHeight} {graphWidth}"
+		on:contextmenu|preventDefault
+	>
+		{#each Object.entries($edges) as [id, edge]}
+			{#if edge.type in customEdges}
+				<svelte:component this={customEdges[edge.type]} data={edge} />
+			{:else if edge.type in builtins.edges}
+				<svelte:component this={builtins.edges[edge.type]} data={edge} />
+			{/if}
+		{/each}
+		{#if $pathDraw.enabled && $pathDraw.targetPosition.x}
+			<path
+				d={getBezierPath({
+					sourcePosition: $pathDraw.sourcePosition,
+					sourceDirection: $pathDraw.sourceDirection,
+					targetPosition: $pathDraw.targetPosition,
+					targetDirection: $pathDraw.getTargetDirection(),
+				})}
+				fill="none"
+				class="flubber__edge-path"
+			/>
+		{/if}
+	</svg>
 </div>
 
 <style>
-    .flubber__edge-path {
-        stroke: #b1b1b7;
-        stroke-width: 1;
-        fill: none;
-    }
+	.flubber__edge-path {
+		stroke: #b1b1b7;
+		stroke-width: 1;
+		fill: none;
+	}
 </style>

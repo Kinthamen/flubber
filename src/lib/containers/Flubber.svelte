@@ -1,32 +1,21 @@
 <script lang="ts">
+    import type {CustomComponentType, EdgeType, NodeType, ViewOptions} from "../types";
     import {flubberIdGenerator} from "../utils/generators";
-    import type {CustomEdgeType, CustomNodeType} from "../types";
-    // import {initStore} from "$lib/store/api.js";
+    import {createStore} from "../store/api";
     import Graph from "$lib/containers/Graph.svelte";
-    import type {EdgeType, NodeArrayType, ViewOptionsType, GridOptionsType} from "../store/store2";
-    import {getOrCreateStore} from "../store/store2";
 
     export let flubberId = flubberIdGenerator();
-    export let nodes: NodeArrayType;
+    export let nodes: {[key: string]: NodeType};
     export let edges: EdgeType[];
-    export let viewOptions: ViewOptionsType;
-    export let gridOptions: GridOptionsType;
-    export let customNodes: CustomNodeType;
-    export let customEdges: CustomEdgeType;
+    export let viewOptions: ViewOptions;
+    export let customNodes: CustomComponentType;
+    export let customEdges: CustomComponentType;
 
-    // initStore(flubberId, {
-    //     nodes: nodes,
-    //     edges: edges,
-    //     viewOptions: viewOptions,
-    //     gridOptions: gridOptions,
-    // });
-
-    getOrCreateStore(flubberId, {
+    createStore(flubberId, {
         nodes: nodes,
         edges: edges,
         viewOptions: viewOptions,
-        gridOptions: gridOptions,
-    });
+    })
 
 </script>
 

@@ -1,19 +1,19 @@
 <script lang="ts">
     import {draggable, type DragOptions} from '../utils/dragging';
-    import {getOrCreateStore} from "../store/store2";
+    import {getStore} from "../store/api";
 
     export let flubberId: string;
     export let id: string | number;
 
-    const { nodes, edges } = getOrCreateStore(flubberId);
+    const { nodes, edges } = getStore(flubberId);
 
     const options: DragOptions = {
         axis: 'both',
         bounds: 'parent',
         onDrag: (e) => {
-            nodes.updateNodePosition(id, { x: e.offsetX, y: e.offsetY });
+            nodes.updatePosition(id, { x: e.offsetX, y: e.offsetY });
             if ($nodes[id].isConnected) {
-                edges.updateEdgePosition(id, { x: e.offsetX, y: e.offsetY });
+                edges.updatePosition(id, { x: e.offsetX, y: e.offsetY });
             }
         },
         defaultPosition: $nodes[id].position,
