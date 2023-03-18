@@ -1,14 +1,12 @@
 <script lang="ts">
     import type {EdgeProps} from "../../types";
 
-    export let baseEdgeProps: EdgeProps;
+    export let edgeData: EdgeProps;
 
-    const {
-        path,
-        style,
-        markerEnd,
-        markerStart,
-    } = baseEdgeProps;
+    $: path = edgeData.path;
+    $: style = edgeData.style;
+    $: markerStart = edgeData.markerStart;
+    $: markerEnd = edgeData.markerEnd;
 
 </script>
 

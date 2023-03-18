@@ -1,10 +1,7 @@
 <script lang="ts">
     import {Flubber} from "../lib";
-    import Stop from "$lib/components/nodes/Stop.svelte";
 
-    const customNodes = {
-        stop: Stop
-    }
+    const customNodes = {}
 
     const nodes = {
         0: {
@@ -20,11 +17,33 @@
     }
 
     const edges = []
+
+    const viewOptions = {
+        zoom: 3,
+        graphDimensions: {
+            position: {
+                x: -1000,
+                y: -1000,
+            },
+            height: 5000,
+            width: 5000,
+            center: {
+                x: 2500,
+                y: 2500,
+            }
+        },
+        gridProperties: {
+            type: 'dots',
+            spacing: 40,
+            snap: false,
+        },
+    }
 </script>
 
 <Flubber
         style="height: 500px; border: 2px solid slategray; border-radius: 5px; box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);"
         {nodes}
         {edges}
+        {viewOptions}
         {customNodes}
 />

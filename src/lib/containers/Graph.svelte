@@ -10,6 +10,7 @@
         BezierEdge
     } from '../components/edges';
 	import {getStore} from "../store/api";
+	import {Direction} from "../types";
 
 	const builtins = {
 		nodes: {
@@ -65,6 +66,17 @@
 		cancel: '.node'
 	};
 
+	$: targetDirection = () => {
+		const distanceX = $pathDraw.sourcePosition.x - $pathDraw.targetPosition.x;
+		const distanceY = $pathDraw.sourcePosition.y - $pathDraw.targetPosition.y;
+
+		if (Math.abs(distanceX) > Math.abs(distanceY)) {
+			return distanceX > 0 ? Direction.Right : Direction.Left;
+		} else {
+			return distanceY > 0 ? Direction.Bottom : Direction.Top;
+		}
+	}
+
 </script>
 
 <div
@@ -110,7 +122,7 @@
 		viewBox="0 0 {graphHeight} {graphWidth}"
 		on:contextmenu|preventDefault
 	>
-		{#each Object.entries($edges) as [id, edge]}
+		{#each $edges as edge}
 			{#if edge.type in customEdges}
 				<svelte:component this={customEdges[edge.type]} data={edge} />
 			{:else if edge.type in builtins.edges}
@@ -123,7 +135,7 @@
 					sourcePosition: $pathDraw.sourcePosition,
 					sourceDirection: $pathDraw.sourceDirection,
 					targetPosition: $pathDraw.targetPosition,
-					targetDirection: $pathDraw.getTargetDirection(),
+					targetDirection: targetDirection(),
 				})}
 				fill="none"
 				class="flubber__edge-path"

@@ -8,6 +8,11 @@ export enum Direction {
     Right = 'right',
 }
 
+export enum MarkerType {
+    Arrow = 'arrow',
+    ArrowClosed = 'arrowclosed',
+}
+
 export interface Position {
     x: number;
     y: number;
@@ -34,13 +39,8 @@ export interface NodeType {
     isConnected: boolean;
 }
 
-export enum MarkerType {
-    Arrow = 'arrow',
-    ArrowClosed = 'arrowclosed',
-}
-
-export type EdgeMarker = {
-    type: MarkerType;
+export interface EdgeMarker {
+    type: string;
     color?: string;
     width?: number;
     height?: number;
@@ -49,22 +49,20 @@ export type EdgeMarker = {
     strokeWidth?: number;
 };
 
-export type EdgeMarkerType = string | EdgeMarker;
-
-export type EdgeProps = EdgeType & {
+export interface EdgeProps extends EdgeType {
     path: string;
-    markerEnd?: EdgeMarkerType;
-    markerStart?: EdgeMarkerType;
+    markerEnd?: string | EdgeMarker;
+    markerStart?: string | EdgeMarker;
 }
 
 export interface EdgeType {
     type: 'straight' | 'smoothstep' | 'step' | 'bezier';
     sourceId: string;
     sourcePosition: Position;
-    sourceDirection: Direction;
+    sourceDirection: string;
     targetId: string;
     targetPosition: Position;
-    targetDirection: Direction;
+    targetDirection: string;
     animate?: boolean;
     style?: string;
     className?: string;

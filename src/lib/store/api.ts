@@ -5,8 +5,8 @@ import type {
     RawStore
 } from '$lib/types';
 import {flubberIdGenerator} from "../utils/generators";
-import {writable} from "svelte/store";
-import {Direction} from "$lib/types";
+import {writable, get} from "svelte/store";
+import type {EdgeType} from "../types";
 
 const _stores: Stores = {};
 
@@ -26,19 +26,18 @@ export function getStore(id: string): CustomStore {
             subscribe: nodesSubscribe,
             set: nodesSet,
             update: nodesUpdate,
-            add: (node, id) => {
-                const nodeId = id || flubberIdGenerator();
+            add: (node, nodeId = flubberIdGenerator()) => {
                 nodesUpdate(prev => ({...prev, [nodeId]: node}));
             },
-            remove: (id) => {
+            remove: (nodeId) => {
                 nodesUpdate(prev => {
-                    delete prev[id];
+                    delete prev[nodeId];
                     return prev
                 })
             },
-            updatePosition: (id, pos) => {
+            updatePosition: (nodeId, pos) => {
                 nodesUpdate(prev => {
-                    prev[id].position = pos;
+                    prev[nodeId].position = pos;
                     return prev;
                 })
             }
@@ -50,31 +49,31 @@ export function getStore(id: string): CustomStore {
             add: (edge) => {
                 edgesUpdate(prev => ([...prev, edge]))
             },
-            remove: (id) => {
-                edgesUpdate(prev => prev.filter(edge => edge.sourceId !== id && edge.targetId !== id))
+            remove: (nodeId) => {
+                edgesUpdate(prev => prev.filter(edge => edge.sourceId !== nodeId && edge.targetId !== nodeId))
             },
-            updatePosition: (id, pos) => {
+            updatePosition: (nodeId, pos) => {
                 edgesUpdate(prev => prev.map(edge => {
 
                     const sourceId = edge.sourceId.split('_')[1];
                     const targetId = edge.targetId.split('_')[1];
 
-                    if (sourceId === id) {
-                        const connector = document.getElementById(edge.sourceId)
+                    if (sourceId === nodeId) {
+                        const connector = document.getElementById(edge.sourceId);
                         if (connector) {
                             const { height, width } = connector.getBoundingClientRect();
                             edge.sourcePosition = { x: pos.x + connector.offsetLeft + (width/2), y: pos.y + connector.offsetTop + (height/2) };
                         }
                     }
-                    if (targetId === id) {
-                        const connector = document.getElementById(edge.targetId)
+                    if (targetId === nodeId) {
+                        const connector = document.getElementById(edge.targetId);
                         if (connector) {
                             const { height, width } = connector.getBoundingClientRect();
                             edge.targetPosition = { x: pos.x + connector.offsetLeft + (width/2), y: pos.y + connector.offsetTop + (height/2) };
                         }
                     }
                     return edge;
-                }))
+                }));
             }
         },
         viewOptions: {
@@ -86,6 +85,61 @@ export function getStore(id: string): CustomStore {
             subscribe: pathSubscribe,
             set: pathSet,
             update: pathUpdate,
+            enableDraw: (
+                e: MouseEvent,
+                connectorId: string,
+                connectionType: 'source' | 'target',
+                direction: string,
+                startPosition: Position
+            ) => {
+                e.preventDefault();
+                const path = get(_stores[id].pathDraw);
+
+                path.sourceId = connectorId;
+                path.sourceType = connectionType;
+                path.sourceDirection = direction;
+                path.sourcePosition = startPosition;
+
+                const graph = document.getElementById(`graph-${id}`);
+                if (graph) {
+                    graph.addEventListener('mousemove', getStore(id).pathDraw.drawingEvent, false);
+                }
+
+                path.enabled = true;
+            },
+            disableDraw: (
+                connectorId: string,
+                connectionType: 'source' | 'target',
+                direction: string,
+                startPosition: Position,
+            ) => {
+                const path = get(_stores[id].pathDraw);
+
+                if (path.enabled && path.sourceId !== connectorId && path.sourceType !== connectionType) {
+
+                    const newEdge: EdgeType = {
+                        type: 'bezier',
+                        sourceId: path.sourceType === 'source' ? path.sourceId : connectorId,
+                        sourcePosition: path.sourceType === 'source' ? path.sourcePosition : startPosition,
+                        sourceDirection: path.sourceType === 'source' ? path.sourceDirection : direction,
+                        targetId: path.sourceType === 'source' ? connectorId : path.sourceId,
+                        targetPosition: path.sourceType === 'source' ? startPosition : path.sourcePosition,
+                        targetDirection: path.sourceType === 'source' ? direction : path.sourceDirection,
+                    }
+
+                    const duplicates = get(_stores[id].edges).filter(edge => edge.targetId === newEdge.targetId && edge.sourceId === newEdge.sourceId);
+
+                    if (!duplicates.length) {
+                        const nodes = get(_stores[id].nodes);
+
+                        const sourceId = newEdge.sourceId.split('_')[1];
+                        const targetId = newEdge.targetId.split('_')[1];
+
+                        nodes[sourceId].isConnected = nodes[targetId].isConnected = true;
+                        getStore(id).edges.add(newEdge);
+                    }
+                }
+            },
             drawingEvent: (e: MouseEvent) => {
                 const graph = document.getElementById(`graph-${id}`);
                 if (graph) {
@@ -93,29 +147,6 @@ export function getStore(id: string): CustomStore {
                     const x = e.clientX - bounds.left;
                     const y = e.clientY - bounds.top;
                     pathUpdate(prev => ({...prev, targetPosition: { x: x, y: y }}));
-                }
-            },
-            getTargetDirection: () => {
-                let sourceX, sourceY, targetX, targetY;
-
-                const unsubscribe = pathSubscribe(path => {
-                    sourceX = path.sourcePosition.x;
-                    sourceY = path.sourcePosition.y;
-                    targetX = path.targetPosition.x;
-                    targetY = path.targetPosition.y;
-                });
-
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const distanceX = sourceX - targetX;
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const distanceY = sourceY - targetY;
-
-                if (Math.abs(distanceX) > Math.abs(distanceY)) {
-                    return distanceX > 0 ? Direction.Right : Direction.Left;
-                } else {
-                    return distanceY > 0 ? Direction.Bottom : Direction.Top;
                 }
             },
         },

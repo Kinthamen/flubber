@@ -71,11 +71,8 @@
         return `M${sourcePosition.x},${sourcePosition.y} C${sourceControlX},${sourceControlY} ${targetControlX},${targetControlY} ${targetPosition.x},${targetPosition.y}`;
     }
 
-    $: path = getBezierPath(data);
-    $: baseEdgeProps = {
-        ...data,
-        path: path,
-    }
+    $: edgeData = {...data, path: getBezierPath(data)}
+
 </script>
 
-<BaseEdge {baseEdgeProps} />
+<BaseEdge {edgeData} />
