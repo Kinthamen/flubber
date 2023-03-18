@@ -50,7 +50,6 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@neodrag/svelte": "^2.0.3",
-		"svelte-drag": "^3.1.0"
+		"@neodrag/svelte": "^2.0.3"
 	}
 }
