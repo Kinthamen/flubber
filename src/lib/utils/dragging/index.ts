@@ -1,20 +1,20 @@
-import {type DragEventData, draggable as coreDraggable, type DragOptions } from './dragging';
+import { type DragEventData, draggable as coreDraggable, type DragOptions } from './dragging';
 import type { Action } from 'svelte/action';
 
 export const draggable = coreDraggable as Action<
-    HTMLElement,
-    DragOptions,
-    {
-        'on:neodrag:start': (e: CustomEvent<DragEventData>) => void;
-        'on:neodrag': (e: CustomEvent<DragEventData>) => void;
-        'on:neodrag:end': (e: CustomEvent<DragEventData>) => void;
-    }
+	HTMLElement,
+	DragOptions,
+	{
+		'on:neodrag:start': (e: CustomEvent<DragEventData>) => void;
+		'on:neodrag': (e: CustomEvent<DragEventData>) => void;
+		'on:neodrag:end': (e: CustomEvent<DragEventData>) => void;
+	}
 >;
 
 export type {
-    DragAxis,
-    DragBounds,
-    DragBoundsCoords,
-    DragEventData,
-    DragOptions,
+	DragAxis,
+	DragBounds,
+	DragBoundsCoords,
+	DragEventData,
+	DragOptions
 } from './dragging';

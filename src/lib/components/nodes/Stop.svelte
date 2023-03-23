@@ -1,33 +1,32 @@
 <script lang="ts">
-    import Node from "../Node.svelte";
-    import Connector from "$lib/components/connectors/Connector.svelte";
+	import BaseNode from './BaseNode.svelte';
+	import BaseConnector from '../connectors/BaseConnector.svelte';
 
-    export let id;
-    export let data;
-    export let flubberId;
-
+	export let id;
+	export let data;
+	export let flubberId;
 </script>
 
-<Node {id} {flubberId}>
-    <div class="stop-node">
-        <Connector connType="target" direction="left" nodeId={id} {flubberId} />
-        Stop {data.hello} hello
-    </div>
-</Node>
+<BaseNode {id} {flubberId}>
+	<div class="stop-node">
+		<BaseConnector connType="target" direction="left" nodeId={id} {flubberId} />
+		Stop {data.hello} hello
+	</div>
+</BaseNode>
 
 <style>
-    .stop-node {
-        display: flex;
-        background-color: white;
-        min-width: 100px;
-        min-height: 50px;
-        justify-content: center;
-        align-items: center;
-        font-size: 14px;
-        text-align: center;
-        border: solid 1px black;
-        border-radius: 5px;
-        box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
-        gap: 10px;
-    }
+	.stop-node {
+		display: flex;
+		background-color: white;
+		min-width: 100px;
+		min-height: 50px;
+		justify-content: center;
+		align-items: center;
+		font-size: 14px;
+		text-align: center;
+		border: solid 1px black;
+		border-radius: 5px;
+		box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
+		gap: 10px;
+	}
 </style>

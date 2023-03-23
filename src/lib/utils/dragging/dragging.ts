@@ -106,7 +106,7 @@ export type DragOptions = {
 	transform?: ({
 		offsetX,
 		offsetY,
-		rootNode,
+		rootNode
 	}: {
 		offsetX: number;
 		offsetY: number;
@@ -229,11 +229,11 @@ export type DragOptions = {
 const enum DEFAULT_CLASS {
 	MAIN = 'neodrag',
 	DRAGGING = 'neodrag-dragging',
-	DRAGGED = 'neodrag-dragged',
+	DRAGGED = 'neodrag-dragged'
 }
 
 const DEFAULT_RECOMPUTE_BOUNDS: DragOptions['recomputeBounds'] = {
-	dragStart: true,
+	dragStart: true
 };
 
 export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
@@ -253,6 +253,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 
 		grid,
 
+		// eslint-disable-next-line prefer-const
 		position,
 
 		cancel,
@@ -262,11 +263,15 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		defaultClassDragging = DEFAULT_CLASS.DRAGGING,
 		defaultClassDragged = DEFAULT_CLASS.DRAGGED,
 
+		// eslint-disable-next-line prefer-const
 		defaultPosition = { x: 0, y: 0 },
 
+		// eslint-disable-next-line prefer-const
 		onDragStart,
+		// eslint-disable-next-line prefer-const
 		onDrag,
-		onDragEnd,
+		// eslint-disable-next-line prefer-const
+		onDragEnd
 	} = options;
 
 	let active = false;
@@ -300,7 +305,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 
 	let currentlyDraggedEl: HTMLElement;
 
-	let isControlled = !!position;
+	const isControlled = !!position;
 
 	// Set proper defaults for recomputeBounds
 	recomputeBounds = { ...DEFAULT_RECOMPUTE_BOUNDS, ...recomputeBounds };
@@ -312,7 +317,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 	function setTranslate(xPos = translateX, yPos = translateY) {
 		if (!transform) {
 			if (legacyTranslate) {
-				let common = `${+xPos}px, ${+yPos}px`;
+				const common = `${+xPos}px, ${+yPos}px`;
 				return setStyle(
 					node,
 					'transform',
@@ -334,7 +339,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		offsetX: translateX,
 		offsetY: translateY,
 		rootNode: node,
-		currentNode: currentlyDraggedEl,
+		currentNode: currentlyDraggedEl
 	});
 
 	const callEvent = (eventName: 'neodrag:start' | 'neodrag' | 'neodrag:end', fn: typeof onDrag) => {
@@ -478,7 +483,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 				left: computedBounds.left + clientToNodeOffsetX,
 				top: computedBounds.top + clientToNodeOffsetY,
 				right: computedBounds.right + clientToNodeOffsetX - nodeRect.width,
-				bottom: computedBounds.bottom + clientToNodeOffsetY - nodeRect.height,
+				bottom: computedBounds.bottom + clientToNodeOffsetY - nodeRect.height
 			};
 
 			finalX = clamp(finalX, virtualClientBounds.left, virtualClientBounds.right);
@@ -486,7 +491,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		}
 
 		if (Array.isArray(grid)) {
-			let [xSnap, ySnap] = grid;
+			const [xSnap, ySnap] = grid;
 
 			if (isNaN(+xSnap) || xSnap < 0)
 				throw new Error('1st argument of `grid` must be a valid positive number');
@@ -555,7 +560,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 
 				setTranslate();
 			}
-		},
+		}
 	};
 };
 

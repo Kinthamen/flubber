@@ -1,21 +1,15 @@
 <script lang="ts">
-    import type { CustomComponentType } from '../types';
-	import { draggable } from '../utils/dragging';
+	import { type CustomComponentType, Direction } from '../types';
+	import { draggable } from '@neodrag/svelte';
+	import { Start, Stop } from '../components/nodes';
+	import { BezierEdge } from '../components/edges';
 	import { getBezierPath } from '../utils/calculators';
-    import {
-        Start,
-        Stop,
-    } from '../components/nodes';
-    import {
-        BezierEdge
-    } from '../components/edges';
-	import {getStore} from "../store/api";
-	import {Direction} from "../types";
+	import { getStore } from '../store/api';
 
 	const builtins = {
 		nodes: {
 			start: Start,
-            stop: Stop,
+			stop: Stop
 		} as CustomComponentType,
 		edges: {
 			bezier: BezierEdge
@@ -75,8 +69,7 @@
 		} else {
 			return distanceY > 0 ? Direction.Bottom : Direction.Top;
 		}
-	}
-
+	};
 </script>
 
 <div
@@ -135,7 +128,7 @@
 					sourcePosition: $pathDraw.sourcePosition,
 					sourceDirection: $pathDraw.sourceDirection,
 					targetPosition: $pathDraw.targetPosition,
-					targetDirection: targetDirection(),
+					targetDirection: targetDirection()
 				})}
 				fill="none"
 				class="flubber__edge-path"
