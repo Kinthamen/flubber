@@ -37,6 +37,9 @@ export interface NodeType {
 	data: object;
 	position: Position;
 	isConnected: boolean;
+	connectors?: {
+		[key: string]: Position;
+	};
 }
 
 export interface EdgeMarker {

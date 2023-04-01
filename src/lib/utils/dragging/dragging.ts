@@ -1,3 +1,7 @@
+import { getStores } from '../../store/api';
+import { get } from 'svelte/store';
+import type { NodeType } from '$lib/types';
+
 export type DragBoundsCoords = {
 	/** Number of pixels from left of the document */
 	left: number;
@@ -167,11 +171,11 @@ export type DragOptions = {
 	/**
 	 * CSS Selector of an element or multiple elements inside the parent node(on which `use:draggable` is applied).
 	 *
-	 * Can be an element or elements too. If it is provided, Trying to drag inside the `cancel` element(s) will prevent dragging.
+	 * Can be an element or elements too. If it is provided, Trying to drag inside the `ignore` element(s) will prevent dragging.
 	 *
 	 * @default undefined
 	 */
-	cancel?: string | HTMLElement | HTMLElement[];
+	ignore?: string | HTMLElement | HTMLElement[];
 
 	/**
 	 * CSS Selector of an element or multiple elements inside the parent node(on which `use:draggable` is applied). Can be an element or elements too.
@@ -181,6 +185,20 @@ export type DragOptions = {
 	 * @default undefined
 	 */
 	handle?: string | HTMLElement | HTMLElement[];
+
+	/**
+	 * If it is provided, calculates node position and connectors position. Stores node position in store[storeId].nodes[nodeId].position
+	 * and connectors center position in the store[storeId].nodes[nodeId].connectors[connectorId].position.
+	 *
+	 * Note: Connector IDs are derived from child nodes with `connector` class name.
+	 *
+	 * @default undefined
+	 */
+	store?: {
+		storeId: string;
+		nodeId: string;
+		connector?: string | HTMLElement | HTMLElement[];
+	};
 
 	/**
 	 * Class to apply on the element on which `use:draggable` is applied.
@@ -256,8 +274,10 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		// eslint-disable-next-line prefer-const
 		position,
 
-		cancel,
+		ignore,
 		handle,
+		// eslint-disable-next-line prefer-const
+		store,
 
 		defaultClass = DEFAULT_CLASS.MAIN,
 		defaultClassDragging = DEFAULT_CLASS.DRAGGING,
@@ -273,6 +293,16 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		// eslint-disable-next-line prefer-const
 		onDragEnd
 	} = options;
+
+	let stores;
+	let nodes;
+	let currentNode: NodeType;
+
+	if (store) {
+		stores = getStores();
+		nodes = get(stores[store.storeId].nodes);
+		currentNode = nodes[store.nodeId];
+	}
 
 	let active = false;
 
@@ -301,7 +331,8 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 	let nodeRect: DOMRect;
 
 	let dragEls: HTMLElement[];
-	let cancelEls: HTMLElement[];
+	let ignoreEls: HTMLElement[];
+	let connectorEls: HTMLElement[];
 
 	let currentlyDraggedEl: HTMLElement;
 
@@ -376,6 +407,20 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		return inverseScale;
 	};
 
+	const calculateConnectorsCenter = (
+		elements: HTMLElement[],
+		nodePosition: { x: number; y: number }
+	) => {
+		return elements.map((elm) => {
+			const { height, width } = elm.getBoundingClientRect();
+			return {
+				id: elm.id,
+				x: nodePosition.x + elm.offsetLeft + width / 2,
+				y: nodePosition.y + elm.offsetTop + height / 2
+			};
+		});
+	};
+
 	function dragStart(e: PointerEvent) {
 		if (disabled) return;
 
@@ -388,26 +433,39 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 		// Compute bounds
 		if (recomputeBounds.dragStart) computedBounds = computeBoundRect(bounds, node);
 
-		if (isString(handle) && isString(cancel) && handle === cancel)
-			throw new Error("`handle` selector can't be same as `cancel` selector");
+		if (isString(handle) && isString(ignore) && handle === ignore)
+			throw new Error("`handle` selector can't be same as `ignore` selector");
 
 		nodeClassList.add(defaultClass);
 
 		dragEls = getHandleEls(handle, node);
-		cancelEls = getCancelElements(cancel, node);
+		ignoreEls = getIgnoreElements(ignore, node);
+
+		if (store) {
+			connectorEls = getConnectorElements(store, node);
+			const nodePosition = { x: xOffset, y: yOffset };
+			const connectorsPosition = calculateConnectorsCenter(connectorEls, nodePosition);
+			currentNode.position = nodePosition;
+			if (!('connectors' in currentNode)) currentNode['connectors'] = {};
+			connectorsPosition.map((pos) => {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
+				currentNode['connectors'][pos.id] = { x: pos.x, y: pos.y };
+			});
+		}
 
 		canMoveInX = /(both|x)/.test(axis);
 		canMoveInY = /(both|y)/.test(axis);
 
-		if (cancelElementContains(cancelEls, dragEls))
+		if (ignoreElementContains(ignoreEls, dragEls))
 			throw new Error(
-				"Element being dragged can't be a child of the element on which `cancel` is applied"
+				"Element being dragged can't be a child of the element on which `ignore` is applied"
 			);
 
 		const eventTarget = e.composedPath()[0] as HTMLElement;
 		if (
 			dragEls.some((el) => el.contains(eventTarget) || el.shadowRoot?.contains(eventTarget)) &&
-			!cancelElementContains(cancelEls, [eventTarget])
+			!ignoreElementContains(ignoreEls, [eventTarget])
 		) {
 			currentlyDraggedEl =
 				dragEls.length === 1 ? node : dragEls.find((el) => el.contains(eventTarget))!;
@@ -461,6 +519,18 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 
 	function drag(e: PointerEvent) {
 		if (!active) return;
+
+		if (store) {
+			const nodePosition = { x: xOffset, y: yOffset };
+			const connectorsPosition = calculateConnectorsCenter(connectorEls, nodePosition);
+			currentNode.position = nodePosition;
+			if (!('connectors' in currentNode)) currentNode['connectors'] = {};
+			connectorsPosition.map((pos) => {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
+				currentNode['connectors'][pos.id] = { x: pos.x, y: pos.y };
+			});
+		}
 
 		if (recomputeBounds.drag) computedBounds = computeBoundRect(bounds, node);
 
@@ -535,7 +605,7 @@ export const draggable = (node: HTMLElement, options: DragOptions = {}) => {
 			handle = options.handle;
 			bounds = options.bounds;
 			recomputeBounds = options.recomputeBounds ?? DEFAULT_RECOMPUTE_BOUNDS;
-			cancel = options.cancel;
+			ignore = options.ignore;
 			applyUserSelectHack = options.applyUserSelectHack ?? true;
 			grid = options.grid;
 			gpuAcceleration = options.gpuAcceleration ?? true;
@@ -597,24 +667,41 @@ function getHandleEls(handle: DragOptions['handle'], node: HTMLElement): HTMLEle
 	return Array.from(handleEls.values());
 }
 
-function getCancelElements(cancel: DragOptions['cancel'], node: HTMLElement): HTMLElement[] {
-	if (!cancel) return [];
+function getIgnoreElements(ignore: DragOptions['ignore'], node: HTMLElement): HTMLElement[] {
+	if (!ignore) return [];
 
-	if (isHTMLElement(cancel)) return [cancel];
-	if (Array.isArray(cancel)) return cancel;
+	if (isHTMLElement(ignore)) return [ignore];
+	if (Array.isArray(ignore)) return ignore;
 
-	const cancelEls = node.querySelectorAll<HTMLElement>(cancel);
+	const ignoreEls = node.querySelectorAll<HTMLElement>(ignore);
 
-	if (cancelEls === null)
+	if (ignoreEls === null)
 		throw new Error(
-			'Selector passed for `cancel` option should be child of the element on which the action is applied'
+			'Selector passed for `ignore` option should be child of the element on which the action is applied'
 		);
 
-	return Array.from(cancelEls.values());
+	return Array.from(ignoreEls.values());
 }
 
-const cancelElementContains = (cancelElements: HTMLElement[], dragElements: HTMLElement[]) =>
-	cancelElements.some((cancelEl) => dragElements.some((el) => cancelEl.contains(el)));
+function getConnectorElements(store: DragOptions['store'], node: HTMLElement): HTMLElement[] {
+	const connector = store?.connector;
+	if (!connector) return [node];
+
+	if (isHTMLElement(connector)) return [connector];
+	if (Array.isArray(connector)) return connector;
+
+	// Valid!! Let's check if this selector exists or not
+	const connectorElements = node.querySelectorAll<HTMLElement>(connector);
+	if (connectorElements === null)
+		throw new Error(
+			'Selector passed for `handle` option should be child of the element on which the action is applied'
+		);
+
+	return Array.from(connectorElements.values());
+}
+
+const ignoreElementContains = (ignoreElements: HTMLElement[], dragElements: HTMLElement[]) =>
+	ignoreElements.some((ignoreEl) => dragElements.some((el) => ignoreEl.contains(el)));
 
 function computeBoundRect(bounds: DragOptions['bounds'], rootNode: HTMLElement) {
 	if (bounds === undefined) return;
