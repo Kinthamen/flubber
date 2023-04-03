@@ -1,31 +1,51 @@
 <script lang="ts">
-	import type { CustomComponentType, EdgeType, NodeType, ViewOptions } from '../types';
-	import { flubberIdGenerator } from '../utils/generators';
-	import { createStore } from '../store/api';
-	import Graph from './Graph.svelte';
+    import {beforeUpdate, SvelteComponentTyped} from "svelte";
+	import type { Node, Edge } from '../types';
+    import { edgesStore, nodesStore, initEdgesStore } from '../store';
+    import Start from "../components/nodes/Start.svelte";
 
-	export let flubberId = flubberIdGenerator();
-	export let nodes: { [key: string]: NodeType };
-	export let edges: EdgeType[];
-	export let viewOptions: ViewOptions;
-	export let customNodes: CustomComponentType;
-	export let customEdges: CustomComponentType;
+	export let nodes: Node[];
+	export let edges: Edge[];
+    export let customNodes: {[key: string]: SvelteComponentTyped} = {};
+    export let customEdges: {[key: string]: SvelteComponentTyped} = {};
 
-	createStore(flubberId, {
-		nodes: nodes,
-		edges: edges,
-		viewOptions: viewOptions
-	});
+    beforeUpdate(() => {
+        nodesStore.set(nodes);
+        initEdgesStore(edges);
+    })
+
+    const usableNodes = {
+        start: Start,
+        ...customNodes
+    }
+    const usableEdges = {
+        ...customEdges
+    }
+
 </script>
 
-<div id="flubber-{flubberId}" class="flubber {$$props.class}" style={$$props.style}>
-	<Graph {flubberId} {customNodes} {customEdges} />
-	<slot />
+<div class="flubber {$$props.class}" style={$$props.style}>
+    {#each $nodesStore as node}
+        {#if node.type in usableNodes}
+            <svelte:component this={usableNodes[node.type]} {node} />
+        {/if}
+    {/each}
+    {#each $edgesStore as edge}
+        <div>{JSON.stringify(edge)}</div>
+    {/each}
 </div>
+<svg>
+
+</svg>
 
 <style>
 	.flubber {
 		overflow: hidden;
 		font-family: 'Segoe UI', sans-serif;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
 	}
 </style>

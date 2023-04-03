@@ -1,38 +1,23 @@
 <script lang="ts">
-	import BaseNode from './BaseNode.svelte';
-	import BaseConnector from '../connectors/BaseConnector.svelte';
+    import { draggable } from './actions';
+    import type { Node } from "../../types";
 
-	export let id;
-	export let data;
-	export let flubberId;
+    export let node: Node;
 </script>
 
-<BaseNode {id} {flubberId}>
-	<div class="start-node">
-		Start {data.hello}
-		<BaseConnector
-			style="height: 50px; flex: 1 0 auto; border: unset; border-radius: unset;"
-			connType="source"
-			direction="right"
-			nodeId={id}
-			{flubberId}
-		/>
-	</div>
-</BaseNode>
+<div id={node.id} class="start" use:draggable>
+    Hello from {node.id}!
+    Position: {JSON.stringify(node.position)}
+</div>
 
 <style>
-	.start-node {
-		display: flex;
-		background-color: white;
-		min-width: 100px;
-		min-height: 50px;
-		justify-content: center;
-		align-items: center;
-		font-size: 14px;
-		text-align: center;
-		border: solid 1px black;
-		border-radius: 5px;
-		box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
-		gap: 10px;
-	}
+    .start {
+        display: flex;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        padding: 15px;
+        border-radius: 50%;
+        background-color: blue;
+    }
 </style>
